@@ -8,7 +8,7 @@ matchcell <- read_csv("./data/matching_cell.csv")
 ## Find NA
 nacol <- which(is.na(names(matchcell)))
 if (length(nacol)) {
-matchcell <- matchcell[, -which(is.na(names(matchcell)))]
+    matchcell <- matchcell[, -which(is.na(names(matchcell)))]
 }
 
 ## Remove empty variable
@@ -25,5 +25,14 @@ matchcell2 <- gather(matchcell, key = "idtype", value = "multi.cellid", 2:length
 matchcell2 %>% select(unique.cellid, multi.cellid) -> matchcell2
 matchcell2 <- matchcell2[!duplicated(matchcell2),]
 
-# matchcell2 <-  matchcell2[apply(matchcell2, 1, function(rows) { !duplicated(rows) })[2, ] ,]
+cellids <- matchcell2
+
+if (!dir.exists("./inst/extdata/"))
+    dir.create("./inst/extdata/", recursive = TRUE)
+
+cellid_db <- src_sqlite("./inst/extdata/cellid.sqlite", create = TRUE)
+
+cellid <- copy_to(cellid_db, cellids, temporary = FALSE, indexes = list("unique.cellid"))
+
+# matchcell2 <- matchcell2[apply(matchcell2, 1, function(rows) { !duplicated(rows) })[2, ] ,]
 # matchcellF <- matchcell2[complete.cases(matchcell2),]
